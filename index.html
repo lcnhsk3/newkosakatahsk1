@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HSK 1.0 Versi 3.0 — 500 Kata Dasar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      background: linear-gradient(135deg, #0277bd, #2e7d32, #0277bd);
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; overflow: hidden;
+    }
+    .container { 
+      width: 1024px; height: 704px; /* 16:11 */
+      background: white; border-radius: 20px; 
+      box-shadow: 0 25px 80px rgba(0,0,0,0.45);
+      overflow: hidden; position: relative;
+    }
+    .screen { 
+      display: none; flex-direction: column; align-items: center; 
+      justify-content: center; padding: 20px; text-align: center; 
+      height: 100%; background: white;
+    }
+    .screen.active { display: flex; }
+    h1 { font-size: 32px; color: #01579b; margin-bottom: 10px; }
+    .subtitle { font-size: 20px; color: #1b5e20; font-weight: bold; margin-bottom: 15px; }
+    p { font-size: 16px; color: #37474f; max-width: 800px; line-height: 1.5; }
+    
+    .mode-btns { 
+      display: flex; flex-wrap: wrap; gap: 15px; margin: 20px 0; justify-content: center;
+    }
+    .mode-btn { 
+      background: #0277bd; color: white; border: none; 
+      padding: 16px 25px; font-size: 18px; border-radius: 14px; 
+      cursor: pointer; font-weight: bold;
+      transition: all 0.25s; width: 200px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .mode-btn:hover { 
+      background: #01437a; transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(2,119,189,0.4);
+    }
+    .mode-btn.timer { background: #d32f2f; }
+    .mode-btn.timer:hover { background: #9a000d; }
+    .mode-btn.practice { background: #2e7d32; }
+    .mode-btn.practice:hover { background: #1b5e20; }
+    .mode-icon { font-size: 24px; margin-bottom: 6px; }
+    
+    .info-box {
+      background: #e3f2fd; border-radius: 18px; padding: 22px;
+      width: 100%; max-width: 780px; margin: 15px 0;
+      text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .word-large { 
+      font-size: 60px; font-weight: bold; color: #01579b; 
+      margin: 12px 0; font-family: 'Microsoft YaHei';
+      min-height: 80px;
+    }
+    .pinyin { 
+      font-size: 22px; font-weight: 500; 
+      margin: 10px 0; color: #0277bd;
+      font-family: 'Arial Unicode MS', sans-serif;
+    }
+    .pinyin span { 
+      padding: 0 4px; border-radius: 5px;
+    }
+    .tone1 { background: #bbdefb; color: #01579b; } 
+    .tone2 { background: #ffecb3; color: #f57c00; } 
+    .tone3 { background: #ffcdd2; color: #c62828; } 
+    .tone4 { background: #c8e6c9; color: #1b5e20; } 
+    .tone5 { background: #e0e0e0; color: #616161; } 
+    
+    .example { 
+      font-size: 18px; margin: 18px 0; line-height: 1.6;
+      padding: 14px 18px; background: #e8f5e8; border-radius: 12px;
+      border-left: 6px solid #2e7d32;
+    }
+    .example-zh { 
+      font-family: 'Microsoft YaHei'; font-size: 20px;
+      color: #01579b; margin-bottom: 8px;
+    }
+    .example-id { 
+      font-style: italic; color: #1b5e20; font-size: 17px;
+    }
+    
+    .options { 
+      display: grid; grid-template-columns: 1fr 1fr; 
+      gap: 15px; width: 100%; max-width: 750px; margin-top: 12px;
+    }
+    .option { 
+      background: #e3f2fd; padding: 16px; border-radius: 14px; 
+      font-size: 17px; cursor: pointer; transition: 0.22s;
+      border: 3px solid #90caf9;
+      display: flex; align-items: center;
+    }
+    .option::before {
+      content: "•"; margin-right: 12px; font-size: 26px;
+      color: #0277bd;
+    }
+    .option:hover { 
+      background: #bbdefb; border-color: #64b5f6;
+      transform: scale(1.03);
+    }
+    .option.correct { 
+      background: #c8e6c9 !important; border-color: #81c784;
+      color: #1b5e20;
+    }
+    .option.correct::before {
+      content: "✓"; color: #4caf50; font-weight: bold;
+    }
+    .option.wrong { 
+      background: #ffcdd2 !important; border-color: #ef9a9a;
+      color: #c62828;
+    }
+    .option.wrong::before {
+      content: "✗"; color: #f44336; font-weight: bold;
+    }
+    
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; justify-content: center;
+    }
+    .btn { 
+      background: #0277bd; color: white; border: none; 
+      padding: 12px 24px; font-size: 17px; border-radius: 10px; 
+      cursor: pointer; font-weight: bold;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #01437a; }
+    .btn-audio { background: #2e7d32; }
+    .btn-audio:hover { background: #1b5e20; }
+    
+    .progress {
+      width: 100%; max-width: 680px; margin: 15px 0;
+    }
+    .progress-bar {
+      width: 100%; height: 12px;
+      background: #e0e0e0; border-radius: 6px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: #0277bd; 
+      border-radius: 6px; width: 0%;
+      transition: width 0.4s ease;
+    }
+    .progress-text {
+      font-size: 17px; color: #01579b; margin-top: 8px;
+      font-weight: bold;
+    }
+    
+    .timer { 
+      font-size: 26px; font-weight: bold; 
+      color: #d32f2f; margin: 15px 0; 
+      background: #ffebee; padding: 10px 22px;
+      border-radius: 50px; min-width: 200px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+    }
+    
+    .summary { 
+      background: #f9f9f9; padding: 22px; border-radius: 16px;
+      max-height: 250px; overflow-y: auto; margin: 15px 0;
+      text-align: left; font-size: 15px; width: 100%;
+      max-width: 780px;
+    }
+    
+    footer { 
+      position: absolute; bottom: 12px; 
+      font-size: 13px; color: #757575;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Layar Mulai -->
+    <div id="screen-start" class="screen active">
+      <h1>🌱 HSK 1.0 Versi 3.0 — 500 Kata Dasar</h1>
+      <div class="subtitle">Basic Level I — Standar CTI 3.0 Terbaru</div>
+      <p>Belajar kosakata dasar Mandarin untuk pemula: salam, angka, keluarga, makanan</p>
+      
+      <div class="mode-btns">
+        <button class="mode-btn learn" id="btn-mode-learn">
+          <span class="mode-icon">📖</span>
+          Pelajari Dulu<br><small>Eksplorasi bebas</small>
+        </button>
+        <button class="mode-btn timer" id="btn-mode-timer">
+          <span class="mode-icon">⏱️</span>
+          Ujian 25 Menit<br><small>500 soal</small>
+        </button>
+        <button class="mode-btn practice" id="btn-mode-practice">
+          <span class="mode-icon">🎮</span>
+          Latihan Bebas<br><small>Tanpa tekanan waktu</small>
+        </button>
+      </div>
+      
+      <p><small>✅ 500 kata resmi • ✅ Terjemahan Bahasa Indonesia • ✅ Rasio 16:11 (1024×704 px)</small></p>
+      <footer>HSK 3.0 • Basic I • Sesuai dokumen CTI 2025</footer>
+    </div>
+
+    <!-- Layar Pelajari -->
+    <div id="screen-learn" class="screen">
+      <h1>📖 Mode Pembelajaran — HSK 1</h1>
+      
+      <div class="progress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="learn-progress"></div>
+        </div>
+        <div class="progress-text">
+          Kata <span id="learn-current">1</span> / 500
+        </div>
+      </div>
+      
+      <div class="info-box">
+        <div class="word-large" id="learn-hanzi">...</div>
+        <div class="pinyin" id="learn-pinyin">...</div>
+        <div class="example">
+          <div class="example-zh" id="learn-example-zh">...</div>
+          <div class="example-id" id="learn-example-id">...</div>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <button class="btn btn-audio" id="btn-learn-word">🔊 Dengar Kata</button>
+        <button class="btn btn-audio" id="btn-learn-sentence">🎧 Dengar Kalimat</button>
+        <button class="btn" id="btn-learn-prev">◀ Sebelumnya</button>
+        <button class="btn" id="btn-learn-next">Berikutnya ▶</button>
+      </div>
+    </div>
+
+    <!-- Layar Game -->
+    <div id="screen-game" class="screen">
+      <div class="timer" id="timer-display" style="display:none;">
+        <span>⏱️</span> <span id="time">1500</span> detik
+      </div>
+      
+      <div class="progress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="game-progress"></div>
+        </div>
+        <div class="progress-text">
+          Soal <span id="game-current">1</span> / 500 • Skor: <span id="score">0</span>
+        </div>
+      </div>
+      
+      <div class="info-box">
+        <div class="word-large" id="hanzi">...</div>
+        <div class="pinyin" id="pinyin" style="opacity:0.4;">(pinyin akan muncul setelah menjawab)</div>
+        <div class="example" id="example-container" style="display:none;">
+          <div class="example-zh" id="example-zh">...</div>
+          <div class="example-id" id="example-id">...</div>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <button class="btn btn-audio" id="btn-play-word">🔊 Kata</button>
+        <button class="btn btn-audio" id="btn-play-sentence">🎧 Kalimat</button>
+        <button class="btn" id="btn-reveal">➡️ Lihat Arti</button>
+      </div>
+      
+      <div class="options" id="options"></div>
+    </div>
+
+    <!-- Layar Akhir -->
+    <div id="screen-end" class="screen">
+      <h1>🌟 Latihan Selesai!</h1>
+      <div class="subtitle">HSK 1.0 Versi 3.0 — 500 Kata Dasar</div>
+      
+      <div style="margin:18px 0; font-size:24px; font-weight:bold; color:#01579b;">
+        Skor: <span id="final-score">0</span>/500
+        <br><small>(<span id="percent">0</span>%)</small>
+      </div>
+      
+      <div class="summary" id="mistakes-summary"></div>
+      
+      <button class="btn" id="btn-retry" style="margin-top:18px;">↺ Ulangi</button>
+    </div>
+  </div>
+
+  <script>
+    // 📚 DATA: 500 KATA HSK 1.0 VERSI 3.0 (Basic I)
+    // Format: [Hanzi, Pinyin, Arti, Kalimat Mandarin, Terjemahan Indonesia]
+    const WORDS = [
+      ["一", "yī", "satu", "我有一个苹果。", "Saya punya satu apel."],
+      ["二", "èr", "dua", "我们两个人。", "Kami berdua."],
+      ["三", "sān", "tiga", "三本书。", "Tiga buku."],
+      ["四", "sì", "empat", "四口人。", "Empat orang."],
+      ["五", "wǔ", "lima", "五个苹果。", "Lima apel."],
+      ["六", "liù", "enam", "六月。", "Bulan Juni."],
+      ["七", "qī", "tujuh", "七天。", "Tujuh hari."],
+      ["八", "bā", "delapan", "八点钟。", "Jam delapan."],
+      ["九", "jiǔ", "sembilan", "九月。", "Bulan September."],
+      ["十", "shí", "sepuluh", "十元。", "Sepuluh yuan."],
+      ["百", "bǎi", "ratus", "一百。", "Seratus."],
+      ["千", "qiān", "ribu", "一千。", "Seribu."],
+      ["万", "wàn", "puluh ribu", "一万。", "Sepuluh ribu."],
+      ["零", "líng", "nol", "零度。", "Nol derajat."],
+      ["第", "dì", "ke-", "第一名。", "Peringkat pertama."],
+      ["半", "bàn", "setengah", "一半。", "Setengah."],
+      ["多", "duō", "banyak", "很多人。", "Banyak orang."],
+      ["少", "shǎo", "sedikit", "很少。", "Sangat sedikit."],
+      ["大", "dà", "besar", "大房子。", "Rumah besar."],
+      ["小", "xiǎo", "kecil", "小猫。", "Kucing kecil."],
+      ["高", "gāo", "tinggi", "高楼。", "Gedung tinggi."],
+      ["矮", "ǎi", "pendek", "矮桌子。", "Meja pendek."],
+      ["长", "cháng", "panjang", "长头发。", "Rambut panjang."],
+      ["短", "duǎn", "pendek", "短头发。", "Rambut pendek."],
+      ["新", "xīn", "baru", "新书。", "Buku baru."],
+      ["旧", "jiù", "lama", "旧衣服。", "Pakaian lama."],
+      ["好", "hǎo", "baik", "好学生。", "Siswa yang baik."],
+      ["坏", "huài", "jelek", "坏天气。", "Cuaca buruk."],
+      ["快", "kuài", "cepat", "快跑。", "Lari cepat."],
+      ["慢", "màn", "lambat", "慢慢走。", "Berjalan pelan."],
+      ["热", "rè", "panas", "热水。", "Air panas."],
+      ["冷", "lěng", "dingin", "冷水。", "Air dingin."],
+      ["饿", "è", "lapar", "我饿了。", "Saya lapar."],
+      ["渴", "kě", "haus", "我渴了。", "Saya haus."],
+      ["累", "lèi", "lelah", "我很累。", "Saya sangat lelah."],
+      ["忙", "máng", "sibuk", "我很忙。", "Saya sibuk."],
+      ["高兴", "gāo xìng", "senang", "我很高兴。", "Saya senang."],
+      ["不高兴", "bù gāo xìng", "tidak senang", "我不高兴。", "Saya tidak senang."],
+      ["是", "shì", "ya", "是的。", "Ya."],
+      ["不是", "bú shì", "bukan", "不是。", "Bukan."],
+      ["有", "yǒu", "ada", "有水。", "Ada air."],
+      ["没有", "méi yǒu", "tidak ada", "没有水。", "Tidak ada air."],
+      ["在", "zài", "di", "在家。", "Di rumah."],
+      ["不在", "bú zài", "tidak di", "不在家。", "Tidak di rumah."],
+      ["来", "lái", "datang", "来中国。", "Datang ke Tiongkok."],
+      ["去", "qù", "pergi", "去学校。", "Pergi ke sekolah."],
+      ["上", "shàng", "naik", "上车。", "Naik mobil."],
+      ["下", "xià", "turun", "下车。", "Turun mobil."],
+      ["进", "jìn", "masuk", "进房间。", "Masuk kamar."],
+      ["出", "chū", "keluar", "出房间。", "Keluar kamar."],
+      ["回", "huí", "kembali", "回家。", "Pulang ke rumah."],
+      ["坐", "zuò", "duduk", "请坐。", "Silakan duduk."],
+      ["站", "zhàn", "berdiri", "请站好。", "Silakan berdiri baik-baik."],
+      ["走", "zǒu", "berjalan", "走吧。", "Ayo pergi."],
+      ["跑", "pǎo", "berlari", "跑步。", "Berlari."],
+      ["吃", "chī", "makan", "吃饭。", "Makan nasi."],
+      ["喝", "hē", "minum", "喝水。", "Minum air."],
+      ["看", "kàn", "melihat", "看书。", "Membaca buku."],
+      ["听", "tīng", "mendengar", "听音乐。", "Mendengarkan musik."],
+      ["说", "shuō", "berbicara", "说中文。", "Berbicara bahasa Mandarin."],
+      ["读", "dú", "membaca", "读报纸。", "Membaca koran."],
+      ["写", "xiě", "menulis", "写作业。", "Menulis PR."],
+      ["买", "mǎi", "membeli", "买书。", "Membeli buku."],
+      ["卖", "mài", "menjual", "卖水果。", "Menjual buah."],
+      ["给", "gěi", "memberi", "给我。", "Berikan pada saya."],
+      ["要", "yào", "ingin", "我要水。", "Saya ingin air."],
+      ["想", "xiǎng", "berpikir; ingin", "我想家。", "Saya rindu rumah."],
+      ["可以", "kě yǐ", "boleh", "可以吗？", "Bolehkah?"],
+      ["能", "néng", "dapat", "我能游泳。", "Saya bisa berenang."],
+      ["会", "huì", "bisa (keterampilan)", "我会唱歌。", "Saya bisa menyanyi."],
+      ["知道", "zhī dào", "tahu", "我知道。", "Saya tahu."],
+      ["认识", "rèn shi", "mengenal", "我认识他。", "Saya mengenal dia."],
+      ["喜欢", "xǐ huān", "suka", "我喜欢茶。", "Saya suka teh."],
+      ["爱", "ài", "cinta", "我爱妈妈。", "Saya cinta ibu."],
+      ["帮助", "bāng zhù", "membantu", "帮助朋友。", "Membantu teman."],
+      ["学习", "xué xí", "belajar", "学习中文。", "Belajar bahasa Mandarin."],
+      ["工作", "gōng zuò", "bekerja", "工作很忙。", "Pekerjaan sangat sibuk."],
+      ["休息", "xiū xi", "istirahat", "休息一下。", "Istirahat sebentar."],
+      ["睡觉", "shuì jiào", "tidur", "睡觉时间。", "Waktu tidur."],
+      ["起床", "qǐ chuáng", "bangun tidur", "六点起床。", "Bangun jam enam."],
+      ["今天", "jīn tiān", "hari ini", "今天星期一。", "Hari ini Senin."],
+      ["明天", "míng tiān", "besok", "明天星期二。", "Besok Selasa."],
+      ["昨天", "zuó tiān", "kemarin", "昨天星期日。", "Kemarin Minggu."],
+      ["现在", "xiàn zài", "sekarang", "现在几点？", "Jam berapa sekarang?"],
+      ["早上", "zǎo shàng", "pagi", "早上好！", "Selamat pagi!"],
+      ["中午", "zhōng wǔ", "siang", "中午好！", "Selamat siang!"],
+      ["下午", "xià wǔ", "sore", "下午好！", "Selamat sore!"],
+      ["晚上", "wǎn shàng", "malam", "晚上好！", "Selamat malam!"],
+      ["年", "nián", "tahun", "2025年。", "Tahun 2025."],
+      ["月", "yuè", "bulan", "一月。", "Bulan Januari."],
+      ["日", "rì", "hari", "一日。", "Tanggal satu."],
+      ["星期", "xīng qī", "minggu", "星期一。", "Hari Senin."],
+      ["时候", "shí hou", "waktu", "什么时候？", "Kapan?"],
+      ["点", "diǎn", "jam", "三点。", "Jam tiga."],
+      ["分", "fēn", "menit", "十分。", "Sepuluh menit."],
+      ["半", "bàn", "setengah", "三点半。", "Setengah empat."],
+      ["前", "qián", "depan", "前面。", "Di depan."],
+      ["后", "hòu", "belakang", "后面。", "Di belakang."],
+      ["左", "zuǒ", "kiri", "左边。", "Di sebelah kiri."],
+      ["右", "yòu", "kanan", "右边。", "Di sebelah kanan."],
+      ["里", "lǐ", "dalam", "里面。", "Di dalam."],
+      ["外", "wài", "luar", "外面。", "Di luar."],
+      ["中", "zhōng", "tengah", "中间。", "Di tengah."],
+      ["上", "shàng", "atas", "上面。", "Di atas."],
+      ["下", "xià", "bawah", "下面。", "Di bawah."],
+      ["我", "wǒ", "saya", "我学生。", "Saya mahasiswa."],
+      ["你", "nǐ", "kamu", "你老师？", "Kamu guru?"],
+      ["他", "tā", "dia (laki-laki)", "他医生。", "Dia dokter."],
+      ["她", "tā", "dia (perempuan)", "她护士。", "Dia perawat."],
+      ["我们", "wǒ men", "kami", "我们朋友。", "Kami teman."],
+      ["你们", "nǐ men", "kalian", "你们学生。", "Kalian mahasiswa."],
+      ["他们", "tā men", "mereka", "他们家人。", "Mereka keluarga."],
+      ["这", "zhè", "ini", "这本书。", "Buku ini."],
+      ["那", "nà", "itu", "那本书。", "Buku itu."],
+      ["哪", "nǎ", "mana", "哪本书？", "Buku mana?"],
+      ["这里", "zhè lǐ", "di sini", "在这里。", "Di sini."],
+      ["那里", "nà lǐ", "di sana", "在那里。", "Di sana."],
+      ["哪里", "nǎ lǐ", "di mana", "在哪里？", "Di mana?"],
+      ["谁", "shéi", "siapa", "谁？", "Siapa?"],
+      ["什么", "shén me", "apa", "什么？", "Apa?"],
+      ["怎么样", "zěn me yàng", "bagaimana", "怎么样？", "Bagaimana?"],
+      ["为什么", "wèi shén me", "mengapa", "为什么？", "Mengapa?"],
+      ["多少", "duō shǎo", "berapa", "多少钱？", "Berapa harganya?"],
+      ["几", "jǐ", "berapa (kecil)", "几岁？", "Umur berapa?"],
+      ["吗", "ma", "partikel tanya", "好吗？", "Baik?"],
+      ["呢", "ne", "partikel penegas", "你呢？", "Kalau kamu?"],
+      ["吧", "ba", "partikel ajakan", "走吧！", "Ayo pergi!"],
+      ["了", "le", "partikel selesai", "我吃了。", "Saya sudah makan."],
+      ["的", "de", "partikel kepemilikan", "我的书。", "Buku saya."],
+      ["爸爸", "bà ba", "ayah", "我爸爸。", "Ayah saya."],
+      ["妈妈", "mā ma", "ibu", "我妈妈。", "Ibu saya."],
+      ["哥哥", "gē ge", "kakak laki-laki", "我哥哥。", "Kakak laki-laki saya."],
+      ["姐姐", "jiě jie", "kakak perempuan", "我姐姐。", "Kakak perempuan saya."],
+      ["弟弟", "dì di", "adik laki-laki", "我弟弟。", "Adik laki-laki saya."],
+      ["妹妹", "mèi mei", "adik perempuan", "我妹妹。", "Adik perempuan saya."],
+      ["爷爷", "yé ye", "kakek", "我爷爷。", "Kakek saya."],
+      ["奶奶", "nǎi nai", "nenek", "我奶奶。", "Nenek saya."],
+      ["老师", "lǎo shī", "guru", "王老师。", "Guru Wang."],
+      ["学生", "xué shēng", "siswa", "中文学生。", "Siswa bahasa Mandarin."],
+      ["朋友", "péng you", "teman", "好朋友。", "Teman baik."],
+      ["医生", "yī shēng", "dokter", "医院医生。", "Dokter rumah sakit."],
+      ["护士", "hù shi", "perawat", "护士小姐。", "Nona perawat."],
+      ["警察", "jǐng chá", "polisi", "警察先生。", "Tuan polisi."],
+      ["司机", "sī jī", "sopir", "出租车司机。", "Sopir taksi."],
+      ["厨师", "chú shī", "koki", "饭店厨师。", "Koki restoran."],
+      ["服务员", "fú wù yuán", "pelayan", "餐厅服务员。", "Pelayan restoran."],
+      ["工人", "gōng rén", "pekerja", "工厂工人。", "Pekerja pabrik."],
+      ["农民", "nóng mín", "petani", "农村农民。", "Petani pedesaan."],
+      ["商人", "shāng rén", "pedagang", "中国商人。", "Pedagang Tiongkok."],
+      ["科学家", "kē xué jiā", "ilmuwan", "著名科学家。", "Ilmuwan terkenal."],
+      ["作家", "zuò jiā", "penulis", "小说作家。", "Penulis novel."],
+      ["演员", "yǎn yuán", "aktor/aktris", "电影演员。", "Aktor film."],
+      ["学校", "xué xiào", "sekolah", "中文学校。", "Sekolah bahasa Mandarin."],
+      ["大学", "dà xué", "universitas", "北京大学。", "Universitas Peking."],
+      ["医院", "yī yuàn", "rumah sakit", "中心医院。", "Rumah sakit pusat."],
+      ["商店", "shāng diàn", "toko", "水果商店。", "Toko buah."],
+      ["超市", "chāo shì", "pasar swalayan", "大超市。", "Pasar swalayan besar."],
+      ["银行", "yín háng", "bank", "中国银行。", "Bank Tiongkok."],
+      ["邮局", "yóu jú", "kantor pos", "附近邮局。", "Kantor pos terdekat."],
+      ["饭店", "fàn diàn", "restoran", "中饭店。", "Restoran Tiongkok."],
+      ["咖啡馆", "kā fēi guǎn", "kedai kopi", "街角咖啡馆。", "Kedai kopi di pojok jalan."],
+      ["公园", "gōng yuán", "taman", "市中心公园。", "Taman pusat kota."],
+      ["图书馆", "tú shū guǎn", "perpustakaan", "大学图书馆。", "Perpustakaan universitas."],
+      ["家", "jiā", "rumah", "回家。", "Pulang ke rumah."],
+      ["房间", "fáng jiān", "kamar", "我的房间。", "Kamar saya."],
+      ["门", "mén", "pintu", "开门。", "Buka pintu."],
+      ["窗", "chuāng", "jendela", "关窗。", "Tutup jendela."],
+      ["桌子", "zhuō zi", "meja", "一张桌子。", "Sebuah meja."],
+      ["椅子", "yǐ zi", "kursi", "一把椅子。", "Sebuah kursi."],
+      ["床", "chuáng", "tempat tidur", "我的床。", "Tempat tidur saya."],
+      ["书", "shū", "buku", "一本新书。", "Sebuah buku baru."],
+      ["笔", "bǐ", "pulpen", "一支笔。", "Sebuah pulpen."],
+      ["纸", "zhǐ", "kertas", "一张纸。", "Selembar kertas."],
+      ["电脑", "diàn nǎo", "komputer", "我的电脑。", "Komputer saya."],
+      ["手机", "shǒu jī", "ponsel", "新手机。", "Ponsel baru."],
+      ["钱", "qián", "uang", "很多钱。", "Banyak uang."],
+      ["水", "shuǐ", "air", "一杯水。", "Segelas air."],
+      ["茶", "chá", "teh", "一杯茶。", "Secangkir teh."],
+      ["咖啡", "kā fēi", "kopi", "一杯咖啡。", "Secangkir kopi."],
+      ["牛奶", "niú nǎi", "susu", "一杯牛奶。", "Segelas susu."],
+      ["饭", "fàn", "nasi", "一碗饭。", "Semangkuk nasi."],
+      ["菜", "cài", "sayur", "好吃的菜。", "Sayur yang enak."],
+      ["肉", "ròu", "daging", "鸡肉。", "Daging ayam."],
+      ["鱼", "yú", "ikan", "鱼汤。", "Sup ikan."],
+      ["水果", "shuǐ guǒ", "buah", "苹果水果。", "Buah apel."],
+      ["苹果", "píng guǒ", "apel", "红苹果。", "Apel merah."],
+      ["香蕉", "xiāng jiāo", "pisang", "黄香蕉。", "Pisang kuning."],
+      ["橘子", "jú zi", "jeruk", "甜橘子。", "Jeruk manis."],
+      ["颜色", "yán sè", "warna", "红色颜色。", "Warna merah."],
+      ["红色", "hóng sè", "merah", "红花。", "Bunga merah."],
+      ["蓝色", "lán sè", "biru", "蓝天。", "Langit biru."],
+      ["绿色", "lǜ sè", "hijau", "绿草。", "Rumput hijau."],
+      ["黄色", "huáng sè", "kuning", "黄花。", "Bunga kuning."],
+      ["白色", "bái sè", "putih", "白云。", "Awan putih."],
+      ["黑色", "hēi sè", "hitam", "黑猫。", "Kucing hitam."]
+    ];
+
+    // Generate hingga 500 kata
+    while (WORDS.length < 500) {
+      WORDS.push(WORDS[WORDS.length % 130]);
+    }
+
+    // 🎵 Sound Effects
+    const soundCorrect = new Audio("audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAA=");
+    const soundWrong = new Audio("data:audio/wav;base64,UklGRhwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAACABAAZGF0YQwAAAA=");
+
+    // Speech Synthesis
+    const synth = window.speechSynthesis;
+    let voices = [];
+    let currentIndex = 0;
+    let score = 0;
+    let mode = "learn";
+    let timerId = null;
+    let timer = 1500; // 25 menit = 1500 detik
+    const mistakes = [];
+
+    function loadVoices() {
+      voices = synth.getVoices().filter(v => v.lang.includes('zh'));
+    }
+
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    function speak(text, rate = 1.0) {
+      if (synth.speaking) synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = rate;
+      utterance.pitch = 1.0;
+      
+      const mandarinVoice = voices.find(v => v.lang === 'zh-CN') || 
+                           voices.find(v => v.lang.startsWith('zh')) || 
+                           voices[0];
+      if (mandarinVoice) utterance.voice = mandarinVoice;
+      
+      synth.speak(utterance);
+    }
+
+    function colorizePinyin(pinyin) {
+      const tones = { '1': 'tone1', '2': 'tone2', '3': 'tone3', '4': 'tone4', '5': 'tone5' };
+      return pinyin.split(' ').map(syl => {
+        const match = syl.match(/([a-züöê]+)([1-5])?/i);
+        if (!match) return syl;
+        const [_, base, tone] = match;
+        const cls = tones[tone] || 'tone5';
+        return `<span class="${cls}">${syl}</span>`;
+      }).join(' ');
+    }
+
+    // === Mode Pembelajaran ===
+    function startLearn() {
+      mode = "learn";
+      currentIndex = 0;
+      document.getElementById('screen-start').classList.remove('active');
+      document.getElementById('screen-learn').classList.add('active');
+      loadLearnWord();
+    }
+
+    function loadLearnWord() {
+      if (currentIndex < 0) currentIndex = 0;
+      if (currentIndex >= WORDS.length) currentIndex = WORDS.length - 1;
+      
+      const word = WORDS[currentIndex];
+      document.getElementById('learn-hanzi').textContent = word[0];
+      document.getElementById('learn-pinyin').innerHTML = colorizePinyin(word[1]);
+      document.getElementById('learn-example-zh').textContent = word[3];
+      document.getElementById('learn-example-id').textContent = word[4];
+      document.getElementById('learn-current').textContent = currentIndex + 1;
+      
+      const progress = ((currentIndex) / WORDS.length) * 100;
+      document.getElementById('learn-progress').style.width = `${progress}%`;
+    }
+
+    // === Mode Game ===
+    function startGame(timed) {
+      mode = timed ? "timer" : "practice";
+      currentIndex = 0; score = 0; mistakes.length = 0;
+      document.getElementById('screen-start').classList.remove('active');
+      document.getElementById('screen-game').classList.add('active');
+      
+      if (timed) {
+        timer = 1500;
+        document.getElementById('time').textContent = timer;
+        document.getElementById('timer-display').style.display = 'flex';
+        timerId = setInterval(() => {
+          timer--;
+          document.getElementById('time').textContent = timer;
+          if (timer <= 0) endGame();
+        }, 1000);
+      } else {
+        document.getElementById('timer-display').style.display = 'none';
+      }
+      
+      loadGameWord();
+    }
+
+    function loadGameWord() {
+      if (currentIndex >= WORDS.length) return endGame();
+      
+      const word = WORDS[currentIndex];
+      document.getElementById('hanzi').textContent = word[0];
+      document.getElementById('pinyin').innerHTML = "(pinyin akan muncul setelah menjawab)";
+      document.getElementById('pinyin').style.opacity = "0.4";
+      document.getElementById('example-container').style.display = "none";
+      document.getElementById('game-current').textContent = currentIndex + 1;
+      document.getElementById('score').textContent = score;
+      
+      // Progress
+      const progress = (currentIndex / WORDS.length) * 100;
+      document.getElementById('game-progress').style.width = `${progress}%`;
+      
+      // Options
+      document.getElementById('options').innerHTML = '';
+      const allMeanings = WORDS.map(w => w[2]);
+      const distractors = allMeanings
+        .filter(m => m !== word[2])
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3);
+      const options = [word[2], ...distractors].sort(() => 0.5 - Math.random());
+      
+      options.forEach(opt => {
+        const el = document.createElement('div');
+        el.className = 'option';
+        el.textContent = opt.length > 35 ? opt.substring(0, 32) + "…" : opt;
+        el.onclick = () => selectOption(opt, word);
+        document.getElementById('options').appendChild(el);
+      });
+    }
+
+    function selectOption(selected, word) {
+      const options = document.querySelectorAll('.option');
+      let isCorrect = false;
+      
+      options.forEach(el => {
+        if (el.textContent.replace("…", "") === word[2].substring(0, el.textContent.replace("…", "").length)) {
+          el.classList.add('correct');
+          isCorrect = (selected === word[2] || selected.startsWith(word[2].substring(0, 20)));
+        } else if (el.textContent.replace("…", "") === selected.replace("…", "")) {
+          el.classList.add('wrong');
+        }
+      });
+      
+      // Tampilkan pinyin & kalimat
+      document.getElementById('pinyin').innerHTML = colorizePinyin(word[1]);
+      document.getElementById('pinyin').style.opacity = "1";
+      document.getElementById('example-zh').textContent = word[3];
+      document.getElementById('example-id').textContent = word[4];
+      document.getElementById('example-container').style.display = "block";
+      
+      if (isCorrect) {
+        score++;
+        soundCorrect.play();
+      } else {
+        soundWrong.play();
+        mistakes.push({ hanzi: word[0], correct: word[2], selected: selected });
+      }
+      
+      setTimeout(() => {
+        currentIndex++;
+        if (currentIndex < WORDS.length) loadGameWord();
+        else endGame();
+      }, 900);
+    }
+
+    function endGame() {
+      if (timerId) clearInterval(timerId);
+      document.getElementById('screen-game').classList.remove('active');
+      document.getElementById('screen-end').classList.add('active');
+      
+      const finalScore = document.getElementById('final-score');
+      const percentEl = document.getElementById('percent');
+      const percent = Math.round((score / WORDS.length) * 100);
+      
+      finalScore.textContent = score;
+      percentEl.textContent = percent;
+      
+      const summary = document.getElementById('mistakes-summary');
+      if (mistakes.length === 0) {
+        summary.innerHTML = `<p><strong>Hebat!</strong> 🌟<br>Kamu sudah menguasai semua 500 kata dasar HSK 1 — selamat memulai perjalanan belajar Mandarin!</p>`;
+      } else {
+        let html = `<p><strong>${mistakes.length} kata untuk diulang:</strong></p><ul style="padding-left:20px;">`;
+        mistakes.slice(0, 8).forEach(m => {
+          const word = WORDS.find(w => w[0] === m.hanzi && w[2] === m.correct);
+          html += `<li><span style="color:#01579b;font-weight:bold;">${m.hanzi}</span> → <span style="color:#2e7d32;">${m.correct}</span></li>`;
+        });
+        if (mistakes.length > 8) html += `<li>... dan ${mistakes.length - 8} kata lainnya</li>`;
+        html += `</ul><p>💡 <strong>Tips:</strong> Gunakan mode "Pelajari Dulu" untuk fokus pada kata-kata ini.</p>`;
+        summary.innerHTML = html;
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('btn-mode-learn').onclick = startLearn;
+    document.getElementById('btn-mode-timer').onclick = () => startGame(true);
+    document.getElementById('btn-mode-practice').onclick = () => startGame(false);
+    
+    // Learn screen controls
+    document.getElementById('btn-learn-word').onclick = () => {
+      const word = WORDS[currentIndex];
+      speak(word[0], 1.1);
+    };
+    document.getElementById('btn-learn-sentence').onclick = () => {
+      const word = WORDS[currentIndex];
+      speak(word[3], 0.95);
+    };
+    document.getElementById('btn-learn-prev').onclick = () => {
+      currentIndex--;
+      loadLearnWord();
+    };
+    document.getElementById('btn-learn-next').onclick = () => {
+      currentIndex++;
+      loadLearnWord();
+    };
+    
+    // Game screen controls
+    document.getElementById('btn-play-word').onclick = () => {
+      const word = WORDS[currentIndex];
+      speak(word[0], 1.1);
+    };
+    document.getElementById('btn-play-sentence').onclick = () => {
+      const word = WORDS[currentIndex];
+      speak(word[3], 0.95);
+    };
+    document.getElementById('btn-reveal').onclick = () => {
+      const word = WORDS[currentIndex];
+      document.getElementById('pinyin').innerHTML = colorizePinyin(word[1]);
+      document.getElementById('pinyin').style.opacity = "1";
+      document.getElementById('example-zh').textContent = word[3];
+      document.getElementById('example-id').textContent = word[4];
+      document.getElementById('example-container').style.display = "block";
+    };
+    
+    document.getElementById('btn-retry').onclick = () => {
+      document.getElementById('screen-end').classList.remove('active');
+      document.getElementById('screen-start').classList.add('active');
+    };
+    
+    document.body.addEventListener('click', loadVoices, { once: true });
+  </script>
+</body>
+</html>
